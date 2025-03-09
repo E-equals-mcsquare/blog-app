@@ -21,33 +21,42 @@ export const GET = async () => {
 
 export const PUT = async () => {
   // Example content structure
+
+  // [{"insert":"Lorem Ipsum Lorem Ipsum"},{"attributes":{"header":1},"insert":"\n"},{"insert":"Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum "},{"attributes":{"header":2},"insert":"\n"},{"insert":"Lorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem Ipsum\n"}]
+
   const defaultContent = [
     {
       M: {
-        type: { S: "heading" },
-        level: { N: "1" },
-        text: { S: "Introduction" },
+        insert: { S: "Lorem Ipsum Lorem Ipsum" },
       },
     },
     {
       M: {
-        type: { S: "paragraph" },
-        text: { S: "This is the introduction to my blog..." },
+        attributes: { M: { header: { N: "1" } } },
+        insert: { S: "\n" },
       },
     },
     {
       M: {
-        type: { S: "image" },
-        src: { S: "https://example.com/image1.jpg" },
-        alt: { S: "An example image" },
+        insert: { S: "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum " },
       },
     },
     {
       M: {
-        type: { S: "paragraph" },
-        text: { S: "Another paragraph with text." },
+        attributes: { M: { header: { N: "2" } } },
+        insert: { S: "\n" },
       },
     },
+    {
+      M: {
+        insert: { S: "Lorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem IpsumLorem Ipsum\n" },
+      },
+    },
+    {
+      M: {
+        insert: { M: { image: { S: "https://th.bing.com/th/id/OIP.Fll7WPtNT6jrz1oBP8GbCgHaHj?w=152&h=180&c=7&r=0&o=5&dpr=2&pid=1.7" } } },
+      }
+    }
   ];
 
   const addContentToAllItems = async () => {

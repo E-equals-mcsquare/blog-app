@@ -43,31 +43,46 @@ export const PUT = async (req, { params }) => {
     return Response.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const { keywords, link, description, title } = await req.json();
+  const { keywords, link, description, title, content } = await req.json();
+
+  let dbContent = {
+    L: content.ops.map((obj) => {
+      let item = { M: {} };
+
+      if (obj.attributes?.header) {
+        item.M.type = { S: "heading" };
+        item.M.level = { N: obj.attributes.header.toString() };
+        item.M.text = { S: obj.insert };
+      }
+
+      if (obj.insert.image) {
+        item.M.type = { S: "image" };
+        item.M.src = { S: obj.insert.image };
+        item.M.alt = { S: "" };
+      } else {
+        item.M.type = { S: "paragraph" };
+        item.M.text = { S: obj.insert };
+      }
+
+      return item;
+    }),
+  };
+
+  console.log("dbContent", JSON.stringify(dbContent));
 
   const command = new PutItemCommand({
     TableName: "blogs",
     Item: {
       id: { N: id },
-      keywords: { S: keywords },
-      link: { S: link },
-      description: { S: description },
+      ...(keywords && { keywords: { S: keywords } }),
+      ...(link && { link: { S: link } }),
+      ...(description && { description: { S: description } }),
       modified_date: { S: Date.now().toString() },
-      title: { S: title },
-      content: {
-        L: [
-          { M: { type: { S: "heading" }, level: { N: "1" }, text: { S: "Introduction" } } },
-          { M: { type: { S: "paragraph" }, text: { S: "This is the introduction to my second blog..." } } },
-          { M: { type: { S: "image" }, src: { S: "https://example.com/image2.jpg" }, alt: { S: "Another example image" } } },
-          { M: { type: { S: "paragraph" }, text: { S: "Another paragraph with insights." } } }
-        ]
-      }
+      ...(title && { title: { S: title } }),
+      ...(content && { content: dbContent }),
     },
   });
-
-// [{ "type": "heading","level": 1,"text": "Introduction"},{"type": "paragraph","text": "This is the introduction to my blog..."},{"type": "image","src": "https://example.com/image1.jpg","alt": "An example image"},{"type": "paragraph","text": "Another paragraph with text."}]
   
-
   try {
     await client.send(command);
     return Response.json(
