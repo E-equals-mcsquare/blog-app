@@ -4,6 +4,7 @@ import {uploadImageToS3, createPresignedUrlWithClient} from "@/lib/s3";
 import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import "./MyEditor.scss";
 
 const MyEditor = ({ blogid }) => {
   const editor = useRef();
@@ -13,7 +14,8 @@ const MyEditor = ({ blogid }) => {
 
   const modules = {
     toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
+        [{ align: [] }],
+        [{ header: "1" }, { header: "2" }, { font: [] }],
       [{ size: [] }],
       ["bold", "italic", "underline", "strike", "blockquote"],
       [
@@ -23,6 +25,7 @@ const MyEditor = ({ blogid }) => {
         { indent: "+1" },
       ],
       ["link", "image", "video"],
+    //   [{ align: "left" }, { align: "center" }, { align: "right" }],
       ["clean"],
     ],
     clipboard: {
@@ -44,6 +47,7 @@ const MyEditor = ({ blogid }) => {
     "link",
     "image",
     "video",
+    "align"
   ];
 
   const onSaveBlog = async () => {

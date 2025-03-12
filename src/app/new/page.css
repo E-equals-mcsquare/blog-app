@@ -1,0 +1,26 @@
+.ql-editor img {
+  max-width: 600px !important; /* Set your desired max width */
+  height: auto; /* Maintain aspect ratio */
+}
+
+form {
+  display: flex !important;
+  flex-direction: column;
+  grid-gap: 5px;
+}
+form label {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+form .footer {
+  display: flex;
+  grid-gap: 10px;
+}
+form .footer .save-button,
+form .footer .cancel-button {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  right: auto;
+}/*# sourceMappingURL=page.css.map */

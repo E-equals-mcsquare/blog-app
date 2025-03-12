@@ -2,7 +2,11 @@
 
 import * as dotenv from "dotenv";
 dotenv.config();
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 // import {readFile} from "node:fs/promises";
 // import { fromIni } from "@aws-sdk/credential-provider-ini";
@@ -60,8 +64,56 @@ const uploadImageToS3 = async (base64Image) => {
     return await s3.("getObject", params);
   }; */
 
-  const createPresignedUrlWithClient = (key) => {
-    const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-    return getSignedUrl(s3, command, { expiresIn: 3600 });
-  };
-export {uploadImageToS3, createPresignedUrlWithClient};
+const createPresignedUrlWithClient = (key) => {
+  const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+  return getSignedUrl(s3, command, { expiresIn: 3600 });
+};
+
+const uploadBlogToS3 = async (blogId, content) => {
+  const fileName = `blogs/${blogId}.json`;
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: fileName, // Store as a JSON file
+        Body: JSON.stringify(content),
+        ContentType: "application/json",
+      })
+    );
+    console.log("Blog uploaded successfully to S3!");
+    return fileName;
+  } catch (error) {
+    console.error("Error uploading blog:", error);
+  }
+};
+
+const getBlogFromS3 = async (blogId) => {
+  const fileName = `blogs/${blogId}.json`;
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: fileName,
+  });
+  try {
+    const data = await s3.send(command);
+    const bodyContents = await streamToString(data.Body);
+    console.log("Blog fetched successfully from S3!", bodyContents);
+    return JSON.parse(bodyContents);
+  } catch (error) {
+    console.error("Error fetching blog:", error);
+    return null;
+  }
+};
+const streamToString = (stream) =>
+  new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("error", reject);
+    stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+  });
+
+export {
+  uploadImageToS3,
+  createPresignedUrlWithClient,
+  uploadBlogToS3,
+  getBlogFromS3,
+};

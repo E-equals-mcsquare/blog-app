@@ -7,27 +7,29 @@ import {
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import client from "@/lib/dynamodb";
+import { getBlogFromS3 } from "@/lib/s3";
 
-// Get a single blog by ID
+// Get a single blog metadata from DynamoDB by ID
 export const GET = async (req, { params }) => {
   const { id } = await params;
 
   if (!id) {
     return Response.json({ error: "ID is required" }, { status: 400 });
   }
-
-  const command = new GetItemCommand({
-    TableName: "blogs",
-    Key: {
-      id: { N: id },
-    },
-  });
-
-  const { Item } = await client.send(command);
-
   try {
-    await client.send(command);
-    return Response.json(Item, { status: 200 });
+    const command = new GetItemCommand({
+      TableName: "blogs",
+      Key: {
+        blogid: { S: id },
+      },
+    });
+
+    const { Item } = await client.send(command);
+
+    // Get content from S3
+    const content = await getBlogFromS3(id);
+
+    return Response.json({ Item, content }, { status: 200 });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 400 });
@@ -70,19 +72,36 @@ export const PUT = async (req, { params }) => {
 
   console.log("dbContent", JSON.stringify(dbContent));
 
-  const command = new PutItemCommand({
+  const command = new UpdateItemCommand({
     TableName: "blogs",
-    Item: {
+    Key: {
       id: { N: id },
-      ...(keywords && { keywords: { S: keywords } }),
-      ...(link && { link: { S: link } }),
-      ...(description && { description: { S: description } }),
-      modified_date: { S: Date.now().toString() },
-      ...(title && { title: { S: title } }),
-      ...(content && { content: dbContent }),
+    },
+    UpdateExpression: `SET 
+        ${keywords ? "#k = :keywords," : ""}
+        ${link ? "#l = :link," : ""}
+        ${description ? "#d = :description," : ""}
+        #md = :modified_date,
+        ${title ? "#t = :title," : ""}
+        ${content ? "#c = :content" : ""}`.replace(/,\s*$/, ""), // Remove trailing comma
+    ExpressionAttributeNames: {
+      ...(keywords && { "#k": "keywords" }),
+      ...(link && { "#l": "link" }),
+      ...(description && { "#d": "description" }),
+      "#md": "modified_date",
+      ...(title && { "#t": "title" }),
+      ...(content && { "#c": "content" }),
+    },
+    ExpressionAttributeValues: {
+      ...(keywords && { ":keywords": { S: keywords } }),
+      ...(link && { ":link": { S: link } }),
+      ...(description && { ":description": { S: description } }),
+      ":modified_date": { S: Date.now().toString() },
+      ...(title && { ":title": { S: title } }),
+      ...(content && { ":content": dbContent }),
     },
   });
-  
+
   try {
     await client.send(command);
     return Response.json(

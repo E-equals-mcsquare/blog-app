@@ -1,0 +1,13 @@
+.banner {
+    font-size: 240px;
+    font-weight: bold;
+    border-top: 1px solid #00000034;
+    border-bottom: 1px solid #00000034;
+}
+
+.allblogposts {
+    margin: 20px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}

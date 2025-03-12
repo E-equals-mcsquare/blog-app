@@ -1,16 +1,17 @@
 "use client";
 
 import { uploadImageToS3 } from "@/lib/s3";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "./page.scss";
 import Editor from "@/components/editor";
 import { Modal } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
-const NewArticle = () => {
+const EditArticle = () => {
+  const params = useParams();
   const router = useRouter();
   const editor = useRef();
   const [value, setValue] = useState("");
@@ -92,6 +93,30 @@ const NewArticle = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  useEffect(() => {
+    const fetchBlogContent = async () => {
+      const { id } = params;
+      if (id) {
+        try {
+          const response = await fetch(`/api/blogs/${id}`);
+          const data = await response.json();
+          let contents = await data.content.content;
+          console.log("Loaded Content:", JSON.stringify(contents));
+
+          editor.current.getEditor().setContents(contents);
+
+          title.current.value = data.title;
+          description.current.value = data.description;
+          keywords.current.value = data.keywords;
+        } catch (error) {
+          console.error("Error fetching blog content:", error);
+        }
+      }
+    };
+
+    fetchBlogContent();
+  }, [router.query]);
+
   return (
     <>
       <Editor
@@ -134,4 +159,4 @@ const NewArticle = () => {
   );
 };
 
-export default NewArticle;
+export default EditArticle;
